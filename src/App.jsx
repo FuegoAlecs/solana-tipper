@@ -173,6 +173,7 @@ function App() {
           </div>
 
           <div style={{ marginBottom: '1.5rem' }}>
+            .
             <label htmlFor="amount" style={styles.label}>Tip Amount (SOL)</label>
             <input
               id="amount"
