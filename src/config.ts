@@ -1,35 +1,25 @@
 // src/config.ts
-import { cookieStorage, createConfig, http } from "@account-kit/react";
+import {
+  cookieStorage,
+  createConfig,
+  http,
+  type AlchemyAccountsUIConfig,
+} from "@account-kit/react";
 import { Connection } from "@solana/web3.js";
-import { sepolia } from "@account-kit/infra";
+import { sepolia, alchemy } from "@account-kit/infra";
 
 // Load environment variables
 const VITE_ALCHEMY_API_KEY = import.meta.env.VITE_ALCHEMY_API_KEY;
 const VITE_ALCHEMY_POLICY_ID = import.meta.env.VITE_ALCHEMY_POLICY_ID;
 
 if (!VITE_ALCHEMY_API_KEY) {
-  throw new Error("Missing VITE_ALCHEMY_API_KEY in environment variables. Please check your .env file.");
+  throw new Error(
+    "Missing VITE_ALCHEMY_API_KEY in environment variables. Please check your .env file."
+  );
 }
 
-// Create and export the final configuration object
-export const config = createConfig({
-  // Required
-  rpcUrl: `https://eth-sepolia.g.alchemy.com/v2/${VITE_ALCHEMY_API_KEY}`,
-  chain: sepolia,
-  // Optional
-  ssr: true,
-  storage: cookieStorage,
-  // Required for features below
-  solana: {
-    connection: new Connection(
-      `https://solana-devnet.g.alchemy.com/v2/${VITE_ALCHEMY_API_KEY}`,
-      {
-        wsEndpoint: "wss://api.devnet.solana.com",
-        commitment: "confirmed",
-      }
-    ),
-    policyId: VITE_ALCHEMY_POLICY_ID,
-  },
+const uiConfig: AlchemyAccountsUIConfig = {
+  illustrationStyle: "outline",
   auth: {
     sections: [
       [{ type: "email" }],
@@ -47,4 +37,27 @@ export const config = createConfig({
     ],
     addPasskeyOnSignup: false,
   },
-});
+};
+
+// Create and export the final configuration object
+export const config = createConfig(
+  {
+    transport: alchemy({ apiKey: VITE_ALCHEMY_API_KEY }),
+    chain: sepolia,
+    // Optional
+    ssr: true,
+    storage: cookieStorage,
+    // Required for features below
+    solana: {
+      connection: new Connection(
+        `https://solana-devnet.g.alchemy.com/v2/${VITE_ALCHEMY_API_KEY}`,
+        {
+          wsEndpoint: "wss://api.devnet.solana.com",
+          commitment: "confirmed",
+        }
+      ),
+      policyId: VITE_ALCHEMY_POLICY_ID,
+    },
+  },
+  uiConfig
+);
