@@ -1,13 +1,13 @@
 // src/App.jsx
 import React, { useState, useEffect } from 'react';
 import { PublicKey, SystemProgram } from '@solana/web3.js';
-import { useAuth, useAuthModal, useSolanaSigner, useSolanaTransactionSender } from '@account-kit/react';
+import { useUser, useAuthModal, useSolanaConnection, useSolanaTransaction } from '@account-kit/react';
 
 function App() {
   const { openAuthModal } = useAuthModal();
-  const { signer } = useSolanaSigner();
-  const { sendTransaction, isPending } = useSolanaTransactionSender();
-  const { user } = useAuth();
+  const { signer } = useSolanaConnection();
+  const { sendTransaction, isPending } = useSolanaTransaction();
+  const { user } = useUser();
   const [solPrice, setSolPrice] = useState(0);
   const [tipStatus, setTipStatus] = useState('');
   const [recipientAddress, setRecipientAddress] = useState('');
@@ -58,16 +58,12 @@ function App() {
     setTipStatus('Processing tip...');
 
     try {
-      const recipient = new PublicKey(recipientAddress);
       const amountInLamports = tipAmount * 1e9;
       const result = await sendTransaction({
-        instructions: [
-          SystemProgram.transfer({
-            fromPubkey: new PublicKey(signer.address),
-            toPubkey: recipient,
-            lamports: amountInLamports,
-          }),
-        ],
+        transfer: {
+          amount: amountInLamports,
+          toAddress: recipientAddress,
+        },
       });
 
       console.log('Transaction sent successfully:', result);
