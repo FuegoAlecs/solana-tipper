@@ -18,8 +18,9 @@ const coreConfig = {
   storage: cookieStorage,
   solana: {
     connection: new Connection(
-      `https://solana-devnet.g.alchemy.com/solana/v1/${ALCHEMY_API_KEY}`,
+      `https://solana-devnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`,
       {
+        wsEndpoint: "wss://api.devnet.solana.com",
         commitment: "confirmed",
       }
     ),
