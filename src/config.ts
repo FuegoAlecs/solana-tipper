@@ -30,26 +30,25 @@ const coreConfig = {
 // UI configuration (second parameter)
 // This is required for useAuthModal to work
 const uiConfig = {
+  illustrationStyle: "outline",
   auth: {
     sections: [
-      // Social login section
+      [{ type: "email" }],
       [
-        { type: "social", authProviderId: "google", mode: "popup" }
+        { type: "passkey" },
+        { type: "social", authProviderId: "google", mode: "popup" },
+        { type: "social", authProviderId: "facebook", mode: "popup" },
       ],
-      // Email and Passkey section
       [
-        { type: "email" },
-        { type: "passkey" }
-      ]
+        {
+          type: "external_wallets",
+          walletConnect: { projectId: "c3d940c25ca8483a697d6fcd47363116" },
+        },
+      ],
     ],
-    addPasskeyOnSignup: true,
+    addPasskeyOnSignup: false,
   },
-  theme: {
-    mode: "light"
-  },
-  illustrationStyle: "outline"
 };
 
 // Create and export the final configuration object
-export const config = createConfig(coreConfig);
-export const uiConfig = uiConfig;
+export const config = createConfig(coreConfig, uiConfig);
