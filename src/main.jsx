@@ -1,11 +1,9 @@
 // main.jsx
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query"; // if using React Query
-import { AlchemyAccountProvider } from "@account-kit/react";
-// main.jsx
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { AlchemyAccountProvider, AlchemyAccountContext } from "@account-kit/react";
 import { config } from "./config";
-
 import App from "./App.jsx";
 
 const queryClient = new QueryClient();

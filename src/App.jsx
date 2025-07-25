@@ -1,27 +1,19 @@
 // src/App.jsx
 import React, { useState, useEffect } from 'react';
 import { PublicKey, SystemProgram } from '@solana/web3.js';
-import { useAuthModal, useSolanaTransaction } from '@account-kit/react';
+import { useAuth, useAuthModal, useSolanaSigner, useSolanaTransactionSender } from '@account-kit/react';
 
 function App() {
-  // Get the authentication modal control
   const { openAuthModal } = useAuthModal();
-  
-  // Get the Solana transaction sending function AND signer
-  const {
-    sendTransaction,
-    isPending,
-    signer,
-  } = useSolanaTransaction({});
-
-  // State for UI elements
+  const { signer } = useSolanaSigner();
+  const { sendTransaction, isPending } = useSolanaTransactionSender();
+  const { user } = useAuth();
   const [solPrice, setSolPrice] = useState(0);
   const [tipStatus, setTipStatus] = useState('');
   const [recipientAddress, setRecipientAddress] = useState('');
-  const [tipAmount, setTipAmount] = useState(0.001); // Default tip amount
+  const [tipAmount, setTipAmount] = useState(0.001);
   const [isValidAddress, setIsValidAddress] = useState(true);
 
-  // Fetch SOL price from Alchemy Price API
   useEffect(() => {
     const fetchSolPrice = async () => {
       try {
@@ -36,36 +28,28 @@ function App() {
     };
 
     fetchSolPrice();
-    // Refresh price every 30 seconds
     const interval = setInterval(fetchSolPrice, 30000);
     return () => clearInterval(interval);
   }, []);
 
-  // Validate Solana address format in real-time
   useEffect(() => {
     if (recipientAddress) {
       try {
-        new PublicKey(recipientAddress); // This will throw if invalid
+        new PublicKey(recipientAddress);
         setIsValidAddress(true);
       } catch (e) {
         setIsValidAddress(false);
       }
     } else {
-      // Empty address is considered valid (but button will be disabled)
       setIsValidAddress(true);
     }
   }, [recipientAddress]);
 
-  // Handle the tip sending logic
   const handleTip = async () => {
-    // Basic validation
-    // Check if signer exists (user is connected)
     if (!signer) {
       setTipStatus('Please connect your wallet first');
       return;
     }
-    
-    // Check recipient address
     if (!recipientAddress || !isValidAddress) {
       setTipStatus('Please enter a valid recipient address');
       return;
@@ -74,39 +58,28 @@ function App() {
     setTipStatus('Processing tip...');
 
     try {
-      // Convert user input to Solana PublicKey
       const recipient = new PublicKey(recipientAddress);
-      // Convert SOL amount to lamports (1 SOL = 1,000,000,000 lamports)
       const amountInLamports = tipAmount * 1e9;
-
-      // Send transaction using the Alchemy hook with instructions
-      // This follows the instruction-based approach from the docs
       const result = await sendTransaction({
         instructions: [
-          // Create a SystemProgram transfer instruction
           SystemProgram.transfer({
-            fromPubkey: new PublicKey(signer.address), // Sender's address from signer
-            toPubkey: recipient, // Recipient's address
-            lamports: amountInLamports, // Amount in lamports
+            fromPubkey: new PublicKey(signer.address),
+            toPubkey: recipient,
+            lamports: amountInLamports,
           }),
         ],
       });
 
       console.log('Transaction sent successfully:', result);
-      // Show success message with transaction hash
       setTipStatus(`Success! Transaction ID: ${result.hash.substring(0, 10)}...`);
-
-      // Automatically clear the status message after 5 seconds
       setTimeout(() => setTipStatus(''), 5000);
     } catch (error) {
       console.error('Error sending tip:', error);
-      // Show error message to the user
       setTipStatus(`Error: ${error.message || error.toString()}`);
     }
   };
 
-  // Show login screen if user is not connected (no signer)
-  if (!signer) {
+  if (!user) {
     return (
       <div style={{
         minHeight: '100vh',
@@ -141,8 +114,6 @@ function App() {
           </div>
           <h1 style={{ fontSize: '1.875rem', fontWeight: 'bold', color: '#1F2937', marginBottom: '0.5rem' }}>Solana Tipper</h1>
           <p style={{ color: '#4B5563', marginBottom: '1.5rem' }}>Connect your wallet to start tipping</p>
-          
-          {/* Alchemy Auth Modal Trigger Button */}
           <button
             onClick={openAuthModal}
             style={{
@@ -162,7 +133,6 @@ function App() {
           >
             Sign In
           </button>
-          
           <div style={{ marginTop: '1rem', textAlign: 'center' }}>
             <p style={{ fontSize: '0.875rem', color: '#6B7280' }}>Powered by Alchemy Smart Wallets</p>
             <p style={{ fontSize: '0.875rem', color: '#6B7280', marginTop: '0.25rem' }}>Enjoy gasless transactions!</p>
@@ -172,7 +142,6 @@ function App() {
     );
   }
 
-  // Main application UI when user is connected
   return (
     <div style={{
       minHeight: '100vh',
@@ -180,17 +149,16 @@ function App() {
       background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)'
     }}>
       <div style={{ maxWidth: '48rem', margin: '0 auto' }}>
-        {/* Header */}
-        <header style={{ 
-          padding: '1.5rem 0', 
-          textAlign: 'center', 
+        <header style={{
+          padding: '1.5rem 0',
+          textAlign: 'center',
           marginBottom: '2rem',
           borderBottom: '1px solid #E5E7EB'
         }}>
-          <h1 style={{ 
-            fontSize: '2.25rem', 
-            fontWeight: 'bold', 
-            color: '#1F2937', 
+          <h1 style={{
+            fontSize: '2.25rem',
+            fontWeight: 'bold',
+            color: '#1F2937',
             marginBottom: '0.5rem',
             display: 'flex',
             alignItems: 'center',
@@ -201,10 +169,10 @@ function App() {
             </svg>
             Solana Tipper
           </h1>
-          <div style={{ 
-            fontSize: '1.125rem', 
-            fontWeight: '600', 
-            color: '#6366F1', 
+          <div style={{
+            fontSize: '1.125rem',
+            fontWeight: '600',
+            color: '#6366F1',
             backgroundColor: '#EEF2FF',
             padding: '0.5rem 1rem',
             borderRadius: '9999px',
@@ -215,7 +183,6 @@ function App() {
         </header>
 
         <main style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-          {/* User Info Card */}
           <div style={{
             backgroundColor: 'white',
             borderRadius: '1rem',
@@ -231,7 +198,7 @@ function App() {
             }}>
               <div>
                 <h2 style={{ fontSize: '1.25rem', fontWeight: '600', color: '#1F2937', marginBottom: '0.25rem' }}>Your Wallet</h2>
-                <p style={{ fontSize: '0.875rem', color: '#4B5563', wordBreak: 'break-all' }}>{signer.address}</p>
+                <p style={{ fontSize: '0.875rem', color: '#4B5563', wordBreak: 'break-all' }}>{signer?.address}</p>
               </div>
               <div style={{ flexShrink: 0 }}>
                 <span style={{
@@ -253,7 +220,6 @@ function App() {
             </div>
           </div>
 
-          {/* Tip Card */}
           <div style={{
             backgroundColor: 'white',
             borderRadius: '1rem',
@@ -262,7 +228,6 @@ function App() {
           }}>
             <h2 style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1F2937', marginBottom: '1.5rem', textAlign: 'center' }}>Send a Tip</h2>
 
-            {/* Recipient Address Input */}
             <div style={{ marginBottom: '1.5rem' }}>
               <label htmlFor="recipient" style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: '#374151', marginBottom: '0.5rem' }}>
                 Recipient Address
@@ -287,12 +252,12 @@ function App() {
                 }}
               />
               {!isValidAddress && (
-                <p style={{ 
-                  marginTop: '0.5rem', 
-                  fontSize: '0.875rem', 
-                  color: '#DC2626', 
-                  display: 'flex', 
-                  alignItems: 'center' 
+                <p style={{
+                  marginTop: '0.5rem',
+                  fontSize: '0.875rem',
+                  color: '#DC2626',
+                  display: 'flex',
+                  alignItems: 'center'
                 }}>
                   <svg style={{ height: '1.25rem', width: '1.25rem', marginRight: '0.375rem', color: '#EF4444' }} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
@@ -302,7 +267,6 @@ function App() {
               )}
             </div>
 
-            {/* Tip Amount Input */}
             <div style={{ marginBottom: '2rem' }}>
               <label htmlFor="amount" style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: '#374151', marginBottom: '0.5rem' }}>
                 Tip Amount (SOL)
@@ -340,7 +304,6 @@ function App() {
               </div>
             </div>
 
-            {/* Send Tip Button */}
             <button
               onClick={handleTip}
               disabled={isPending || !recipientAddress || !isValidAddress}
@@ -352,8 +315,8 @@ function App() {
                 focus: { outline: 'none', ring: '2px', ringOffset: '2px' },
                 transition: 'all 0.3s ease',
                 cursor: (isPending || !recipientAddress || !isValidAddress) ? 'not-allowed' : 'pointer',
-                backgroundColor: (isPending || !recipientAddress || !isValidAddress) 
-                  ? '#D1D5DB' 
+                backgroundColor: (isPending || !recipientAddress || !isValidAddress)
+                  ? '#D1D5DB'
                   : 'linear-gradient(135deg, #8B5CF6, #EC4899)',
                 color: 'white',
                 border: 'none'
@@ -370,7 +333,6 @@ function App() {
               ) : `Send ${tipAmount} SOL Tip`}
             </button>
 
-            {/* Transaction Status */}
             {tipStatus && (
               <div style={{
                 marginTop: '1rem',
@@ -398,7 +360,6 @@ function App() {
             )}
           </div>
 
-          {/* Auth Modal Trigger for Account Management */}
           <div style={{ textAlign: 'center' }}>
             <button
               onClick={openAuthModal}
