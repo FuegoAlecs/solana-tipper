@@ -51,8 +51,5 @@ const uiConfig = {
 };
 
 // Create and export the final configuration object
-// It's crucial to merge the core and UI configs into one object
-export const config = createConfig({
-  ...coreConfig, // Spread the core configuration
-  ...uiConfig,   // Spread the UI configuration
-});
+export const config = createConfig(coreConfig);
+export const uiConfig = uiConfig;
