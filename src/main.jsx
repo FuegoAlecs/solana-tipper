@@ -7,6 +7,7 @@ import { AlchemyAccountProvider } from "@account-kit/react";
 import { config } from "./config";
 
 import App from "./App.jsx";
+import "./index.css";
 
 const queryClient = new QueryClient();
 
