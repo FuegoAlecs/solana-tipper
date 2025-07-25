@@ -46,7 +46,7 @@ const uiConfig = {
     addPasskeyOnSignup: true,
   },
   theme: {
-    mode: "light"
+    mode: "dark"
   },
   illustrationStyle: "outline"
 };
