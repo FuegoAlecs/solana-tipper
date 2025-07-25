@@ -50,6 +50,9 @@ const uiConfig = {
   illustrationStyle: "outline"
 };
 
-// Create config with both core and UI configurations
-// The order is important: coreConfig first, uiConfig second
-export const config = createConfig(coreConfig, uiConfig);
+// Create and export the final configuration object
+// It's crucial to merge the core and UI configs into one object
+export const config = createConfig({
+  ...coreConfig, // Spread the core configuration
+  ...uiConfig,   // Spread the UI configuration
+});
